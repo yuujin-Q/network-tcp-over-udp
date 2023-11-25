@@ -2,28 +2,27 @@ import socket
 from dataclasses import dataclass
 from socket import socket
 
+from .address import Address
 from .constants import *
 from .segment import Segment
 
 
 @dataclass
 class Connection:
-    __host: str
-    __port: int
+    __addr: Address
     __socket: socket
 
-    def __init__(self, host: str = SELF_IP_ADDR, port: int = DEFAULT_PORT):
+    def __init__(self, addr: Address):
         # Init UDP socket
-        self.__host = host
-        self.__port = port
+        self.__addr = addr
 
         # create socket
         self.__socket = socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.__socket.bind((host, port))
+        self.__socket.bind(self.__addr.get_address_data())
 
-    def send_segment(self, msg: Segment, dest: (str, int)) -> None:
+    def send_segment(self, msg: Segment, dest: Address) -> None:
         # Send single segment into destination
-        self.__socket.sendto(msg, dest)
+        self.__socket.sendto(msg, dest.get_address_data())
 
     def listen_segment(self, timeout: float = 0.200) -> Segment:
         # Listen single UDP datagram within timeout and convert into segment
