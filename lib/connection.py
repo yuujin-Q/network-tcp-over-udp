@@ -1,4 +1,4 @@
-import socket
+import socket as sc
 from dataclasses import dataclass
 from socket import socket
 
@@ -17,12 +17,14 @@ class Connection:
         self.__addr = addr
 
         # create socket
-        self.__socket = socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.__socket = socket(sc.AF_INET, sc.SOCK_DGRAM)
         self.__socket.bind(self.__addr.get_address_data())
 
     def send_segment(self, msg: Segment, dest: Address) -> None:
         # Send single segment into destination
-        self.__socket.sendto(msg, dest.get_address_data())
+        self.__socket.sendto(bytes('stringy', 'utf-8'), dest.get_address_data())
+
+        # TODO: parse msg from segment to byte
 
     def listen_segment(self, timeout: float = 0.200) -> Segment:
         # Listen single UDP datagram within timeout and convert into segment
@@ -32,7 +34,10 @@ class Connection:
             message, address = self.__socket.recvfrom(SEGMENT_SIZE)
 
             print(f'Received segment from address {address}')
-            return Segment(message)
+            print(message)
+
+            # TODO: parse segment from byte message
+            return Segment()
         except TimeoutError:
             # TODO: log format
             print('Timeout Error')
