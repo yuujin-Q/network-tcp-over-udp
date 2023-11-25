@@ -5,16 +5,16 @@ from .constants import *
 
 @dataclass
 class SegmentFlag:
-    ack: bool
-    syn: bool
-    fin: bool
+    # ack: bool
+    # syn: bool
+    # fin: bool
 
     def __init__(self, flag: bytes = b'\x00'):
         # Init flag variable from flag byte
         int_flag: int = struct.unpack(f"{ENDIAN_SPECIFIER}B", flag)[0]
-        self.ack = bool(int_flag & ACK_FLAG)
-        self.syn = bool(int_flag & SYN_FLAG)
-        self.fin = bool(int_flag & FIN_FLAG)
+        self.ack: bool = bool(int_flag & ACK_FLAG)
+        self.syn: bool = bool(int_flag & SYN_FLAG)
+        self.fin: bool = bool(int_flag & FIN_FLAG)
 
     def set_flags(self, flags: list[int]):
         int_flag: int = 0

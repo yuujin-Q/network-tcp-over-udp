@@ -7,23 +7,22 @@ from .segment_flag import SegmentFlag
 CRC_POL = 0b11000000000000101
 
 
-@dataclass
 class Segment:
-    seq_num: int
-    ack_num: int
-    flags: SegmentFlag
-    checksum: int
-    payload: bytes
+    # seq_num: int
+    # ack_num: int
+    # flags: SegmentFlag
+    # checksum: int
+    # payload: bytes
 
 
     # -- Internal Function --
     def __init__(self, seq_num: int = 0, ack_num: int = 0, flags: bytes = b"\x00"):
         # Initalize segment
-        self.seq_num = seq_num
-        self.ack_num = ack_num
-        self.flags = SegmentFlag(flags)
-        self.checksum = 0
-        self.payload = b""
+        self.seq_num: int = seq_num
+        self.ack_num: int = ack_num
+        self.flags: SegmentFlag = SegmentFlag(flags)
+        self.checksum: int = 0
+        self.payload: bytes = b""
 
     def __str__(self):
         output = ""
