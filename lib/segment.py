@@ -1,9 +1,11 @@
-from dataclasses import dataclass
 import struct
-from .segment_flag import SegmentFlag 
+from dataclasses import dataclass
+
 from .constants import *
+from .segment_flag import SegmentFlag
 
 CRC_POL = 0b11000000000000101
+
 
 @dataclass
 class Segment:
@@ -34,45 +36,45 @@ class Segment:
         return output
 
     @staticmethod
-    def syn(seq_num: int) -> 'Segment': 
-        segment = Segment(seq_num= seq_num)
+    def syn(seq_num: int) -> 'Segment':
+        segment = Segment(seq_num=seq_num)
         segment.flags.set_flags([SYN_FLAG])
 
         return segment
 
     @staticmethod
     def ack(seq_num: int, ack_num: int, payload: bytes = b"") -> 'Segment':
-        segment = Segment(seq_num= seq_num, ack_num= ack_num)
+        segment = Segment(seq_num=seq_num, ack_num=ack_num)
         segment.flags.set_flags([ACK_FLAG])
         segment.payload = payload
 
         return segment
-    
+
     @staticmethod
     def syn_ack(seq_num: int, ack_num: int) -> 'Segment':
-        segment = Segment(seq_num= seq_num, ack_num= ack_num)
+        segment = Segment(seq_num=seq_num, ack_num=ack_num)
         segment.flags.set_flags([SYN_FLAG, ACK_FLAG])
 
         return segment
 
     @staticmethod
     def fin(seq_num: int) -> 'Segment':
-        segment = Segment(seq_num= seq_num)
+        segment = Segment(seq_num=seq_num)
         segment.flags.set_flags([FIN_FLAG])
 
         return segment
 
     @staticmethod
     def fin_ack(seq_num: int, ack_num: int) -> 'Segment':
-        segment = Segment(seq_num= seq_num, ack_num= ack_num)
+        segment = Segment(seq_num=seq_num, ack_num=ack_num)
         segment.flags.set_flags([ACK_FLAG, FIN_FLAG])
 
         return segment
 
     def __calculate_checksum(self) -> int:
-        #CRC-16/CCITT-FALSE
-        CRC_XOR_INIT = 0xFFFF  
-        CRC_XOR_OUT = 0x0000 
+        # CRC-16/CCITT-FALSE
+        CRC_XOR_INIT = 0xFFFF
+        CRC_XOR_OUT = 0x0000
         CRC_POLY = 0x1021
 
         data = self.payload
@@ -88,15 +90,13 @@ class Segment:
                     reg ^= CRC_POLY
             reg &= 0xFFFF
         return reg ^ CRC_XOR_OUT
-    
+
     def update_checksum(self) -> None:
         self.checksum = self.__calculate_checksum()
-        
 
-    def is_valid_checksum(self) ->bool:
-        return (self.checksum == self.__calculate_checksum())
-    
-    
+    def is_valid_checksum(self) -> bool:
+        return self.checksum == self.__calculate_checksum()
+
     @staticmethod
     def parse_from_bytes(data: bytes) -> 'Segment':
         seq_num = struct.unpack('I', data[0:4])[0]
@@ -106,13 +106,12 @@ class Segment:
 
         payload = data[12:]
 
-
         segment = Segment(seq_num, ack_num, flags)
         segment.checksum = checksum
         segment.payload = payload
 
         return segment
-    
+
     @staticmethod
     def convert_to_byte(segment: 'Segment') -> bytes:
         data = b""
@@ -123,7 +122,6 @@ class Segment:
         data += segment.payload
 
         return data
-    
 
 # segment = Segment(seq_num=0, ack_num=1)
 # segment.payload = b"bsjdasdjahd testtt"
