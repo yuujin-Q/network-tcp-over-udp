@@ -66,24 +66,24 @@ class Segment:
         return segment
 
     def __calculate_checksum(self) -> bytes:
-        xor_in = 0xFFFF  # initial value
-        xor_out = 0x0000  # final XOR value
-        poly = 0x1021  # generator polinom (normal form)
+        #CRC-16/CCITT-FALSE
+        CRC_XOR_INIT = 0xFFFF  
+        CRC_XOR_OUT = 0x0000 
+        CRC_POLY = 0x1021
 
         data = self.payload
-        reg = xor_in
-        for octet in data:
+        reg = CRC_XOR_INIT
+        for byte in data:
             # reflect in
             for i in range(8):
-                topbit = reg & 0x8000
-                if octet & (0x80 >> i):
-                    topbit ^= 0x8000
+                msb = reg & 0x8000
+                if byte & (0x80 >> i):
+                    msb ^= 0x8000
                 reg <<= 1
-                if topbit:
-                    reg ^= poly
+                if msb:
+                    reg ^= CRC_POLY
             reg &= 0xFFFF
-            # reflect out
-        return reg ^ xor_out
+        return reg ^ CRC_XOR_OUT
     
     def update_checksum(self) -> None:
         self.checksum = self.__calculate_checksum()
@@ -92,6 +92,6 @@ class Segment:
     def is_valid_checksum(self) ->bool:
         return (self.checksum == self.__calculate_checksum())
 
-segment = Segment(payload=b"123456789")
+segment = Segment(payload=b"hello world")
 segment.update_checksum()
 print(segment.checksum)
