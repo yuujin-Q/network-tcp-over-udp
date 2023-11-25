@@ -15,8 +15,6 @@ class Segment:
     checksum: int
     payload: bytes
 
-    # TODO: set_payload
-    # TODO: flag constructor
 
     # -- Internal Function --
     def __init__(self, seq_num: int = 0, ack_num: int = 0, flags: bytes = b"\x00"):
@@ -73,6 +71,13 @@ class Segment:
         segment.flags.set_flags([ACK_FLAG, FIN_FLAG])
 
         return segment
+
+    def set_payload(self, data: bytes):
+        self.payload = data
+
+    def set_flags(self, flags: list[int]):
+        self.flags.set_flags(flags)
+
 
     def __calculate_checksum(self) -> int:
         # CRC-16/CCITT-FALSE
