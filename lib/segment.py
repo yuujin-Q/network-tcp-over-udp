@@ -15,6 +15,9 @@ class Segment:
     checksum: int
     payload: bytes
 
+    # TODO: set_payload
+    # TODO: flag constructor
+
     # -- Internal Function --
     def __init__(self, seq_num: int = 0, ack_num: int = 0, flags: bytes = b"\x00"):
         # Initalize segment

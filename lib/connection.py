@@ -22,9 +22,7 @@ class Connection:
 
     def send_segment(self, msg: Segment, dest: Address) -> None:
         # Send single segment into destination
-        self.__socket.sendto(bytes('stringy', 'utf-8'), dest.get_address_data())
-
-        # TODO: parse msg from segment to byte
+        self.__socket.sendto(Segment.convert_to_byte(msg), dest.get_address_data())
 
     def listen_segment(self, timeout: float = 0.200) -> Segment:
         # Listen single UDP datagram within timeout and convert into segment
@@ -34,10 +32,8 @@ class Connection:
             message, address = self.__socket.recvfrom(SEGMENT_SIZE)
 
             print(f'Received segment from address {address}')
-            print(message)
 
-            # TODO: parse segment from byte message
-            return Segment()
+            return Segment.parse_from_bytes(message)
         except TimeoutError:
             # TODO: log format
             print('Timeout Error')
