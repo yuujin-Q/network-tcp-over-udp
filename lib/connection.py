@@ -21,20 +21,22 @@ class Connection:
         self.__socket = socket(sc.AF_INET, sc.SOCK_DGRAM)
         self.__socket.bind(self.__addr.get_address_data())
 
-    def send_segment(self, msg: Segment, dest: Address) -> None:
+    def send_segment(self, message: MessageInfo) -> None:
         # Send single segment into destination
-        self.__socket.sendto(Segment.convert_to_byte(msg), dest.get_address_data())
+        segment = message.segment
+        dest = message.address
+        self.__socket.sendto(Segment.convert_to_byte(segment), dest.get_address_data())
 
     def listen_segment(self, timeout: float = 0.200) -> MessageInfo:
         # Listen single UDP datagram within timeout and convert into segment
 
         try:
             self.__socket.settimeout(timeout)
-            message, address = self.__socket.recvfrom(SEGMENT_SIZE)
+            segment, address = self.__socket.recvfrom(SEGMENT_SIZE)
 
-            print(f'Received segment from address {address}')
+            # print(f'Received segment from address {address}')
 
-            return MessageInfo(Segment.parse_from_bytes(message), address)
+            return MessageInfo(Segment.parse_from_bytes(segment), address)
         except TimeoutError:
             # TODO: log format
             print('Timeout Error')

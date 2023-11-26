@@ -3,6 +3,7 @@ import struct
 
 from lib.constants import *
 
+
 @dataclass
 class SegmentFlag:
     # ack: bool

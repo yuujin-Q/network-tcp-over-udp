@@ -7,4 +7,5 @@ from lib.segment import Segment
 @dataclass
 class MessageInfo:
     def __init__(self, segment: Segment, address: Address):
-        pass
+        self.segment: Segment = segment
+        self.address: Address = address
