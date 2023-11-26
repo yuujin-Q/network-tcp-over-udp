@@ -1,8 +1,8 @@
 import struct
 from dataclasses import dataclass
 
-from .constants import *
-from .segment_flag import SegmentFlag
+from lib.constants import *
+from lib.segment_flag import SegmentFlag
 
 CRC_POL = 0b11000000000000101
 

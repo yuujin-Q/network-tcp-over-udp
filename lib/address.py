@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from .constants import *
+from lib.constants import *
 
 
 @dataclass
@@ -7,7 +7,7 @@ class Address:
     __ip: str
     __port: int
 
-    def __init__(self, ip: str = SELF_IP_ADDR, port: int = DEFAULT_PORT):
+    def __init__(self, ip: str = LOOPBACK_ADDR, port: int = DEFAULT_PORT):
         # Init Address fields
         self.__ip = ip
         self.__port = port

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import struct
 
-from .constants import *
+from lib.constants import *
 
 @dataclass
 class SegmentFlag:

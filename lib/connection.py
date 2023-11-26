@@ -2,9 +2,10 @@ import socket as sc
 from dataclasses import dataclass
 from socket import socket
 
-from .address import Address
-from .constants import *
-from .segment import Segment
+from lib.constants import *
+from lib.address import Address
+from lib.segment import Segment
+from lib.messageinfo import MessageInfo
 
 
 @dataclass
@@ -24,7 +25,7 @@ class Connection:
         # Send single segment into destination
         self.__socket.sendto(Segment.convert_to_byte(msg), dest.get_address_data())
 
-    def listen_segment(self, timeout: float = 0.200) -> (Segment, Address):
+    def listen_segment(self, timeout: float = 0.200) -> MessageInfo:
         # Listen single UDP datagram within timeout and convert into segment
 
         try:
@@ -33,7 +34,7 @@ class Connection:
 
             print(f'Received segment from address {address}')
 
-            return Segment.parse_from_bytes(message), address
+            return MessageInfo(Segment.parse_from_bytes(message), address)
         except TimeoutError:
             # TODO: log format
             print('Timeout Error')

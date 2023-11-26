@@ -3,9 +3,12 @@ import random
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 
+from lib.constants import LOOPBACK_ADDR, DEFAULT_PORT
 from lib.connection import Connection
 from lib.address import Address
 from lib.segment import Segment
+from lib.messageinfo import MessageInfo
+
 
 @dataclass
 class Host(ABC):
@@ -26,6 +29,10 @@ class Host(ABC):
     def run(self):
         pass
 
+    @abstractmethod
+    def send_segment(self, message: MessageInfo) -> MessageInfo:
+        pass
+
     def init_seq_num(self):
         self._seq_num = random.randint(0, Host.MAX_SEQ_NUM)
 
@@ -34,4 +41,4 @@ class Host(ABC):
         if num == Host.MAX_SEQ_NUM:
             return 0
         else:
-            return num+1
+            return num + 1
