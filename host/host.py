@@ -4,17 +4,18 @@ from dataclasses import dataclass
 from abc import ABC, abstractmethod
 
 from lib.connection import Connection
-
-
-class Status:
-    (CLOSED,
-     LISTEN,
-     SYN_SENT,
-     SYN_RECV,
-     ESTABLISHED) = range(5)
+from lib.address import Address
+from lib.segment import Segment
 
 @dataclass
 class Host(ABC):
+    class Status:
+        (CLOSED,
+         LISTEN,
+         SYN_SENT,
+         SYN_RECV,
+         ESTABLISHED) = range(5)
+
     MAX_SEQ_NUM = 4294967295
 
     # _connection: Connection
