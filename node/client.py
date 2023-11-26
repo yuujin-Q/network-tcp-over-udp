@@ -9,6 +9,7 @@ class Client(Host):
         self._dest_addr: Address = Address(dest_ip, dest_port)
 
     def run(self):
+        # TODO: find server via broadcast
         pass
 
     def three_way_handshake(self):

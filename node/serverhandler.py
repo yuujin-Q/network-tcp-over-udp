@@ -1,23 +1,27 @@
 from node.host import *
 
 
-class Server(Host):
+class ServerHandler(Host):
     def __init__(self, self_ip: str = LOOPBACK_ADDR, self_port: int = DEFAULT_PORT):
         super().__init__(self_ip, self_port)
 
     def run(self):
+        # TODO: implement
         pass
 
     def listen_for_clients(self):
         # Waiting client for connect
+        # TODO: implement
         pass
 
     def start_file_transfer(self):
         # Handshake & file transfer for all client
+        # TODO: implement
         pass
 
     def file_transfer(self, client_addr: Address):
         # File transfer, server-side, Send file to 1 client
+        # TODO: implement
         pass
 
     def three_way_handshake(self) -> Address:
@@ -41,7 +45,7 @@ class Server(Host):
         received = self.send_segment(MessageInfo(syn_ack_segment, dest_addr))
 
         if received is None:
-            pass # TODO handle error
+            pass  # TODO handle error
 
         # SYN-ACK ACK'd, three-way handshake completed
         self._status = Host.Status.ESTABLISHED
@@ -49,7 +53,8 @@ class Server(Host):
 
         return dest_addr
 
+
 if __name__ == '__main__':
-    main = Server()
+    main = ServerHandler()
     main.three_way_handshake()
     main.start_file_transfer()
