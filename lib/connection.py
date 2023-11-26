@@ -34,9 +34,9 @@ class Connection:
             self.__socket.settimeout(timeout)
             segment, address = self.__socket.recvfrom(SEGMENT_SIZE)
 
-            # print(f'Received segment from address {address}')
+            print(f'Received segment from address {address}')
 
-            return MessageInfo(Segment.parse_from_bytes(segment), address)
+            return MessageInfo(Segment.parse_from_bytes(segment), Address(address[0], address[1]))
         except TimeoutError:
             # TODO: log format
             print('Timeout Error')
