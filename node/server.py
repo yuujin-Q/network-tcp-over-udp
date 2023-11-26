@@ -1,6 +1,10 @@
 from node.host import *
 
+
 class Server(Host):
+    def send_segment(self, message: MessageInfo) -> MessageInfo:
+        pass
+
     def __init__(self, self_ip: str = LOOPBACK_ADDR, self_port: int = DEFAULT_PORT):
         self._connection: Connection = Connection(Address(self_ip, self_port))
         self._seq_num: int = 0
@@ -36,8 +40,6 @@ class Server(Host):
         self._status = Host.Status.SYN_RECV
         self.init_seq_num()
         ack_num = Host.next_seq_num(received.seq_num)
-
-
 
         pass
 

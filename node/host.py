@@ -1,12 +1,7 @@
-import dataclasses
 import random
-from dataclasses import dataclass
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 
-from lib.constants import LOOPBACK_ADDR, DEFAULT_PORT
-from lib.connection import Connection
-from lib.address import Address
-from lib.segment import Segment
 from lib.messageinfo import MessageInfo
 
 

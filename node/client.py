@@ -4,6 +4,9 @@ CONNECT_ATTEMPT = 4
 
 
 class Client(Host):
+    def send_segment(self, message: MessageInfo) -> MessageInfo:
+        pass
+
     def __init__(self, dest_ip: str, dest_port: int, self_ip: str = LOOPBACK_ADDR, self_port: int = DEFAULT_PORT):
         self._connection: Connection = Connection(Address(self_ip, self_port))
         self._dest_addr: Address = Address(dest_ip, dest_port)

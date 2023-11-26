@@ -1,5 +1,4 @@
 import struct
-from dataclasses import dataclass
 
 from lib.constants import *
 from lib.segment_flag import SegmentFlag
@@ -14,10 +13,9 @@ class Segment:
     # checksum: int
     # payload: bytes
 
-
     # -- Internal Function --
     def __init__(self, seq_num: int = 0, ack_num: int = 0, flags: bytes = b"\x00"):
-        # Initalize segment
+        # Initialize segment
         self.seq_num: int = seq_num
         self.ack_num: int = ack_num
         self.flags: SegmentFlag = SegmentFlag(flags)
@@ -77,12 +75,8 @@ class Segment:
     def set_flags(self, flags: list[int]):
         self.flags.set_flags(flags)
 
-
     def __calculate_checksum(self) -> int:
         # CRC-16/CCITT-FALSE
-        CRC_XOR_INIT = 0xFFFF
-        CRC_XOR_OUT = 0x0000
-        CRC_POLY = 0x1021
 
         data = self.payload
         reg = CRC_XOR_INIT
