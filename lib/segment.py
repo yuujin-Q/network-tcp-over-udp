@@ -123,81 +123,52 @@ class Segment:
         return data
     
     @staticmethod
-    def encode_ecc(payload: bytes) -> bytes:
+    def encode_ecc(payload: bytes)->bytes:
+        # Convert bytes to a list of bits
         data_bits = [int(bit) for byte in payload for bit in format(byte, '08b')]
+        data_bits = data_bits[4:8]
+        data_bits = data_bits[::-1]
         print(data_bits)
-        r = 0 #banyaknya parity bits
-        while 2**r - r - 1 < len(data_bits):
-            r += 1
 
-        n = len(data_bits) + r #panjang bit yg diretrun
+        # Calculate the total number of bits (n)
+        n = 7
 
-        print(n)
-        hamming_code = [-1] * n #inisiasi hamming code pake nilai -1 semua
+        # Initialize the encoded data with placeholder values
+        hamming_code = [-1] * (n+1)
 
-        print(hamming_code)
-        #ngisi bit data 
+        # Fill in the data bits in their correct positions
         j = 0
-        for i in range(1, n+1):
-            print(i, j)
-            if i & (i - 1) != 0:
-            # if math.log(i)%2 != 0: 
-                #ngosongin indeks 2^n
-                hamming_code[i - 1] = data_bits[j]
+        for i in range(1, n + 2):
+            if i & (i - 1) != 0:  # Skip positions that are powers of 2
+                hamming_code[i] = data_bits[j]
                 j += 1
-            print(hamming_code)
-
-        for i in range(r):
-            mask = 1 << i
-            parity_bit_position = mask - 1
-            parity_bit_value = 0
-            for j in range(1, n + 1):
-                if j & mask != 0:
-                    parity_bit_value += hamming_code[j - 1]
-            hamming_code[parity_bit_position] = parity_bit_value%2
-
-
 
         print(hamming_code)
-        hamming_bytes = bytes([int(''.join(map(str, hamming_code[i:i+8])), 2) for i in range(0, n, 8)])
+        hamming_code[1] = hamming_code[3] ^ hamming_code[5] ^ hamming_code[7]
+        hamming_code[2] = hamming_code[3] ^ hamming_code[6] ^ hamming_code[7]
+        hamming_code[4] = hamming_code[5] ^ hamming_code[6] ^ hamming_code[7]
+
+        hamming_code[0] = 0
+        
+        # hamming_code = hamming_code[::-1]
+        result = [0]
+        hamming_code = hamming_code[1:8]
+        hamming_code = hamming_code[::-1]
+        result += hamming_code
+
+        print(result)
+        hamming_bytes = bytearray([int(''.join(map(str, result[i:i+8])), 2) for i in range(0, n, 8)])
 
         return hamming_bytes
+    
+    @staticmethod
+    def detect_and_correct(encoded_data: bytes) -> bytes:
+        pass
 
-# segment = Segment(seq_num=0, ack_num=1)
-# segment.payload = b"bsjdasdjahd testtt"
-# print(segment)
-# print(segment.payload)
-# segment_byte = Segment.convert_to_byte(segment)
-# print("")
-# print(segment_byte)
+segment = Segment(seq_num=0, ack_num=1)
 
-# segment2 = Segment.parse_from_bytes(segment_byte)
-# print(segment2)
-# print(segment2.payload)
+data_bytes_4 = bytearray([0b0001])
+hamming_code_4 = segment.encode_ecc(data_bytes_4)
+print("Original data:", data_bytes_4)
+print("Hamming code:", hamming_code_4)
 
-# print("segment")
-# print(segment)
-# data_bytes_8 = bytes([0b10110100])
-# hamming_code_8 = segment.encode_ecc(data_bytes_8)
-# print("Original data:", data_bytes_8)
-# print("Hamming code:", hamming_code_8)
-
-# syn = segment.syn(segment.seq_num)
-# print("syn")
-# print(syn)
-
-# ack = segment.ack(segment.seq_num, segment.ack_num)
-# print("ack")
-# print(ack)
-
-# syn_ack = segment.syn_ack(segment.seq_num, segment.ack_num)
-# print("syn_ack")
-# print(syn_ack)
-
-# fin = segment.fin(segment.seq_num)
-# print("syn")
-# print(fin)
-
-# fin_ack = segment.fin_ack(segment.seq_num, segment.ack_num)
-# print("fin_ack")
-# print(fin_ack)
