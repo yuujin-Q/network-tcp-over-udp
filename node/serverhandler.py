@@ -1,4 +1,5 @@
 from node.host import *
+from lib.constants import SERVER_BROADCAST_PORT
 
 
 class ServerHandler(Host):
@@ -55,6 +56,6 @@ class ServerHandler(Host):
 
 
 if __name__ == '__main__':
-    main = ServerHandler()
+    main = ServerHandler(self_port=SERVER_BROADCAST_PORT)
     main.three_way_handshake()
     main.start_file_transfer()

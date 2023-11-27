@@ -15,11 +15,15 @@ class Connection:
 
     def __init__(self, addr: Address):
         # Init UDP socket
-        self.__addr = addr
 
         # create socket
         self.__socket = socket(sc.AF_INET, sc.SOCK_DGRAM)
-        self.__socket.bind(self.__addr.get_address_data())
+        self.__socket.bind(addr.get_address_data())
+        new_addr = self.__socket.getsockname()
+        self.__addr = Address(new_addr[0], new_addr[1])
+
+    def get_addr(self) -> Address:
+        return self.__addr
 
     def send_segment(self, message: MessageInfo) -> None:
         # Send single segment into destination

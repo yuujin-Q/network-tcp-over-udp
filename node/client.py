@@ -1,6 +1,5 @@
+from lib.constants import SERVER_BROADCAST_PORT
 from node.host import *
-
-CONNECT_ATTEMPT = 4
 
 
 class Client(Host):
@@ -47,6 +46,6 @@ class Client(Host):
 
 
 if __name__ == '__main__':
-    main = Client('127.0.0.1', DEFAULT_PORT, self_port=9999)
+    main = Client('127.0.0.1', SERVER_BROADCAST_PORT)
     main.three_way_handshake()
     main.listen_file_transfer()
