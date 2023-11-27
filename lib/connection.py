@@ -27,7 +27,7 @@ class Connection:
         dest = message.address
         self.__socket.sendto(Segment.convert_to_byte(segment), dest.get_address_data())
 
-    def listen_segment(self, timeout: float = 0.200) -> MessageInfo:
+    def listen_segment(self, timeout: float | None = 0.200) -> MessageInfo:
         # Listen single UDP datagram within timeout and convert into segment
 
         try:
