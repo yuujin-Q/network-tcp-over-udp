@@ -2,11 +2,11 @@ import random
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
-from lib.constants import LOOPBACK_ADDR, DEFAULT_PORT, DEFAULT_ATTEMPT
-from lib.connection import Connection
 from lib.address import Address
-from lib.segment import Segment
+from lib.connection import Connection
+from lib.constants import LOOPBACK_ADDR, DEFAULT_PORT, DEFAULT_ATTEMPT
 from lib.messageinfo import MessageInfo
+from lib.segment import Segment
 
 
 @dataclass
@@ -32,16 +32,20 @@ class Host(ABC):
     def run(self):
         pass
 
+    @abstractmethod
+    def three_way_handshake(self) -> Address:
+        pass
+
     def send_segment(self,
                      message: MessageInfo,
                      max_attempt: int = DEFAULT_ATTEMPT,
                      ignore_ack: bool = False) -> MessageInfo | None:
 
         next_seq_num = Host.next_seq_num(self._seq_num)
-        # received = None
+        received: MessageInfo | None = None
         for _ in range(max_attempt):
             self._connection.send_segment(message)
-            received: MessageInfo = self._connection.listen_segment()
+            received = self._connection.listen_segment()
 
             if received is not None:
                 received_segment = received.segment
@@ -64,6 +68,31 @@ class Host(ABC):
 
     def init_seq_num(self):
         self._seq_num = random.randint(0, Host.MAX_SEQ_NUM)
+
+    # Go Back N ARQ
+    def start_receiver_transfer(self):
+        # go back-n receiver process
+
+        # TODO: receiver
+        # while not FIN:
+        #   listen
+        #       if receive: send ack
+
+        # reassemble fragments
+
+        pass
+
+    def start_sender_transfer(self):
+        # go back-n sender process
+
+        # TODO: sender process
+        # fragment frame
+        # for each n fragment, send
+        #   listen
+        #       if ack received for fragment x, increment window start +1, prepare send for fragment-(x+n)
+        #       else, resend from x to x+n
+
+        pass
 
     @staticmethod
     def next_seq_num(num: int):

@@ -1,8 +1,8 @@
-import math
 import struct
 
 from lib.constants import *
 from lib.segment_flag import SegmentFlag
+
 
 class Segment:
     # seq_num: int
@@ -121,9 +121,9 @@ class Segment:
         data += segment.payload
 
         return data
-    
+
     @staticmethod
-    def encode_ecc(payload: bytes)->bytes:
+    def encode_ecc(payload: bytes) -> bytes:
         # Convert bytes to a list of bits
         data_bits = [int(bit) for byte in payload for bit in format(byte, '08b')]
         data_bits = data_bits[4:8]
@@ -134,7 +134,7 @@ class Segment:
         n = 7
 
         # Initialize the encoded data with placeholder values
-        hamming_code = [-1] * (n+1)
+        hamming_code = [-1] * (n + 1)
 
         # Fill in the data bits in their correct positions
         j = 0
@@ -149,7 +149,7 @@ class Segment:
         hamming_code[4] = hamming_code[5] ^ hamming_code[6] ^ hamming_code[7]
 
         hamming_code[0] = 0
-        
+
         # hamming_code = hamming_code[::-1]
         result = [0]
         hamming_code = hamming_code[1:8]
@@ -157,13 +157,14 @@ class Segment:
         result += hamming_code
 
         print(result)
-        hamming_bytes = bytearray([int(''.join(map(str, result[i:i+8])), 2) for i in range(0, n, 8)])
+        hamming_bytes = bytearray([int(''.join(map(str, result[i:i + 8])), 2) for i in range(0, n, 8)])
 
         return hamming_bytes
-    
+
     @staticmethod
     def detect_and_correct(encoded_data: bytes) -> bytes:
         pass
+
 
 segment = Segment(seq_num=0, ack_num=1)
 
@@ -171,4 +172,3 @@ data_bytes_4 = bytearray([0b0001])
 hamming_code_4 = segment.encode_ecc(data_bytes_4)
 print("Original data:", data_bytes_4)
 print("Hamming code:", hamming_code_4)
-
