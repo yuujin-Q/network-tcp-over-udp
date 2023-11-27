@@ -1,10 +1,8 @@
+import math
 import struct
 
 from lib.constants import *
 from lib.segment_flag import SegmentFlag
-
-CRC_POL = 0b11000000000000101
-
 
 class Segment:
     # seq_num: int
@@ -123,6 +121,47 @@ class Segment:
         data += segment.payload
 
         return data
+    
+    @staticmethod
+    def encode_ecc(payload: bytes) -> bytes:
+        data_bits = [int(bit) for byte in payload for bit in format(byte, '08b')]
+        print(data_bits)
+        r = 0 #banyaknya parity bits
+        while 2**r - r - 1 < len(data_bits):
+            r += 1
+
+        n = len(data_bits) + r #panjang bit yg diretrun
+
+        print(n)
+        hamming_code = [-1] * n #inisiasi hamming code pake nilai -1 semua
+
+        print(hamming_code)
+        #ngisi bit data 
+        j = 0
+        for i in range(1, n+1):
+            print(i, j)
+            if i & (i - 1) != 0:
+            # if math.log(i)%2 != 0: 
+                #ngosongin indeks 2^n
+                hamming_code[i - 1] = data_bits[j]
+                j += 1
+            print(hamming_code)
+
+        for i in range(r):
+            mask = 1 << i
+            parity_bit_position = mask - 1
+            parity_bit_value = 0
+            for j in range(1, n + 1):
+                if j & mask != 0:
+                    parity_bit_value += hamming_code[j - 1]
+            hamming_code[parity_bit_position] = parity_bit_value%2
+
+
+
+        print(hamming_code)
+        hamming_bytes = bytes([int(''.join(map(str, hamming_code[i:i+8])), 2) for i in range(0, n, 8)])
+
+        return hamming_bytes
 
 # segment = Segment(seq_num=0, ack_num=1)
 # segment.payload = b"bsjdasdjahd testtt"
@@ -138,6 +177,10 @@ class Segment:
 
 # print("segment")
 # print(segment)
+# data_bytes_8 = bytes([0b10110100])
+# hamming_code_8 = segment.encode_ecc(data_bytes_8)
+# print("Original data:", data_bytes_8)
+# print("Hamming code:", hamming_code_8)
 
 # syn = segment.syn(segment.seq_num)
 # print("syn")
