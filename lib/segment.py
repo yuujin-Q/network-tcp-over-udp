@@ -1,10 +1,8 @@
+import math
 import struct
 
 from lib.constants import *
 from lib.segment_flag import SegmentFlag
-
-CRC_POL = 0b11000000000000101
-
 
 class Segment:
     # seq_num: int
@@ -123,38 +121,54 @@ class Segment:
         data += segment.payload
 
         return data
+    
+    @staticmethod
+    def encode_ecc(payload: bytes)->bytes:
+        # Convert bytes to a list of bits
+        data_bits = [int(bit) for byte in payload for bit in format(byte, '08b')]
+        data_bits = data_bits[4:8]
+        data_bits = data_bits[::-1]
+        print(data_bits)
 
-# segment = Segment(seq_num=0, ack_num=1)
-# segment.payload = b"bsjdasdjahd testtt"
-# print(segment)
-# print(segment.payload)
-# segment_byte = Segment.convert_to_byte(segment)
-# print("")
-# print(segment_byte)
+        # Calculate the total number of bits (n)
+        n = 7
 
-# segment2 = Segment.parse_from_bytes(segment_byte)
-# print(segment2)
-# print(segment2.payload)
+        # Initialize the encoded data with placeholder values
+        hamming_code = [-1] * (n+1)
 
-# print("segment")
-# print(segment)
+        # Fill in the data bits in their correct positions
+        j = 0
+        for i in range(1, n + 2):
+            if i & (i - 1) != 0:  # Skip positions that are powers of 2
+                hamming_code[i] = data_bits[j]
+                j += 1
 
-# syn = segment.syn(segment.seq_num)
-# print("syn")
-# print(syn)
+        print(hamming_code)
+        hamming_code[1] = hamming_code[3] ^ hamming_code[5] ^ hamming_code[7]
+        hamming_code[2] = hamming_code[3] ^ hamming_code[6] ^ hamming_code[7]
+        hamming_code[4] = hamming_code[5] ^ hamming_code[6] ^ hamming_code[7]
 
-# ack = segment.ack(segment.seq_num, segment.ack_num)
-# print("ack")
-# print(ack)
+        hamming_code[0] = 0
+        
+        # hamming_code = hamming_code[::-1]
+        result = [0]
+        hamming_code = hamming_code[1:8]
+        hamming_code = hamming_code[::-1]
+        result += hamming_code
 
-# syn_ack = segment.syn_ack(segment.seq_num, segment.ack_num)
-# print("syn_ack")
-# print(syn_ack)
+        print(result)
+        hamming_bytes = bytearray([int(''.join(map(str, result[i:i+8])), 2) for i in range(0, n, 8)])
 
-# fin = segment.fin(segment.seq_num)
-# print("syn")
-# print(fin)
+        return hamming_bytes
+    
+    @staticmethod
+    def detect_and_correct(encoded_data: bytes) -> bytes:
+        pass
 
-# fin_ack = segment.fin_ack(segment.seq_num, segment.ack_num)
-# print("fin_ack")
-# print(fin_ack)
+segment = Segment(seq_num=0, ack_num=1)
+
+data_bytes_4 = bytearray([0b0001])
+hamming_code_4 = segment.encode_ecc(data_bytes_4)
+print("Original data:", data_bytes_4)
+print("Hamming code:", hamming_code_4)
+
