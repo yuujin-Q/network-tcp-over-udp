@@ -15,6 +15,8 @@ from node.serverhandler import ServerHandler
 class Server:
     def __init__(self, self_ip: str = LOOPBACK_ADDR, self_port: int = DEFAULT_PORT):
         self._connection: ServerHandler = ServerHandler(self_ip, self_port)
+        # get allocated address from socket initialization
+        self._ip, self._port = self._connection.get_address().get_address_data()
         self._clients_server_port_map: dict[Address, int] = dict()
         self._file_payload = b''
         self._port_handler_map: dict[port, ServerHandler] = dict()
@@ -43,19 +45,18 @@ class Server:
         # inform client to redirect
         for client_address, port_num in self._clients_server_port_map.items():
             print(port_num)
-            notification_segment = Segment()
-            notification_segment.set_payload(struct.pack(f'{ENDIAN_SPECIFIER}I', port_num))
-            self._connection.send_segment(MessageInfo(notification_segment, client_address))
+            self._connection.send_payload(struct.pack(f'{ENDIAN_SPECIFIER}I', port_num), client_address)
 
     def init_handlers(self):
         # instantiate server handler threads
-        for address, port_num in self._clients_server_port_map.items():
+        for client_addr, port_num in self._clients_server_port_map.items():
             if port_num == -1:
-                new_handler = ServerHandler(address.get_ip())
+                new_handler = ServerHandler(self._ip)
+                new_handler.set_file_payload(self._file_payload)
 
                 # record new_handler information
-                self._port_handler_map[address.get_port()] = new_handler
-                self._clients_server_port_map[address] = new_handler.get_address().get_port()
+                self._port_handler_map[client_addr.get_port()] = new_handler
+                self._clients_server_port_map[client_addr] = new_handler.get_address().get_port()
 
     def run_handlers(self):
         print('[!] Running Server Handlers')
@@ -103,5 +104,5 @@ if __name__ == "__main__":
     server_parent.set_file_payload(data)
     server_parent.listen()
     server_parent.init_handlers()
-    server_parent.run_handlers()
     server_parent.notify_redirect()
+    server_parent.run_handlers()
