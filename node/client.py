@@ -42,10 +42,6 @@ class Client(Host):
         # print(self._seq_num, self._ack_num)
         return received.address
 
-    def listen_file_transfer(self) -> Segment:
-        # File transfer, client-side
-        pass
-
 
 if __name__ == '__main__':
     main = Client('127.0.0.1', SERVER_BROADCAST_PORT)

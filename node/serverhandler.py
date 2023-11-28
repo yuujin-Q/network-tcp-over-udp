@@ -14,16 +14,6 @@ class ServerHandler(Host):
         # TODO: implement
         pass
 
-    def start_file_transfer(self):
-        # Handshake & file transfer for all client
-        # TODO: implement
-        pass
-
-    def file_transfer(self, client_addr: Address):
-        # File transfer, server-side, Send file to 1 client
-        # TODO: implement
-        pass
-
     def three_way_handshake(self) -> Address:
         # Three-way handshake, server-side, 1 client
         # received = None
