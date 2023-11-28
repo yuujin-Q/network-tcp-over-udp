@@ -65,25 +65,42 @@ class Host(ABC):
 
     def send_ack(self, recv_seq_num: int, dest_addr: Address) -> None:
         # An ACK segment, if carrying no data, consumes no sequence number.
-        ack_num = Host.next_seq_num(recv_seq_num)
-        ack_segment = Segment.ack(self._seq_num, ack_num)
+        self._ack_num = Host.next_seq_num(recv_seq_num)
+        ack_segment = Segment.ack(self._seq_num, self._ack_num)
         self._connection.send_segment(MessageInfo(ack_segment, dest_addr))
 
     def init_seq_num(self):
         self._seq_num = random.randint(0, Host.MAX_SEQ_NUM)
 
     # Go Back N ARQ
-    def start_receiver_transfer(self):
+    def start_receiver_transfer(self, src_address: Address) -> bytes:
         # go back-n receiver process
 
-        # TODO: receiver
-        # while not FIN:
-        #   listen
-        #       if receive: send ack
+        # payload segment buffer
+        payload_segments: list[Segment] = []
+        while True:
+            # TODO: timeout handling
+            # listen for payload fragments
 
-        # reassemble fragments
+            received = self._connection.listen_segment(1000)
+            if received is not None:
+                # if EOF received
+                if received.segment.flags.fin:
+                    break
 
-        pass
+                if self._ack_num == received.segment.seq_num:
+                    # cache payload segment
+                    payload_segments.append(received.segment)
+
+                    # reply sender with ACK
+                    self.send_ack(received.segment.seq_num, src_address)
+
+        # reassemble payload
+        payload = b''
+        for segment in payload_segments:
+            payload += segment.payload
+
+        return payload
 
     def start_sender_transfer(self, dest_address: Address, payload: bytes,
                               chunk_size: int = PAYLOAD_SIZE, window_size: int = WINDOW_SIZE):
@@ -135,6 +152,13 @@ class Host(ABC):
 
             # update window start position
             window_start_index = diff
+
+        # send for transfer completed, send FIN
+        self.send_fin_segment(dest_address)
+
+    def send_fin_segment(self, dest_address: Address):
+        fin_segment = Segment.fin(self._seq_num)
+        self._connection.send_segment(MessageInfo(fin_segment, dest_address))
 
     @staticmethod
     def next_seq_num(num: int):
