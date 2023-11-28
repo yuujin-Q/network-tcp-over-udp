@@ -162,13 +162,46 @@ class Segment:
         return hamming_bytes
     
     @staticmethod
-    def detect_and_correct(encoded_data: bytes) -> bytes:
-        pass
+    def decode_ecc(encoded: bytes)->bytes:
+        data_bits = [int(bit) for byte in encoded for bit in format(byte, '08b')]
+        print(data_bits)
+        data_bits = data_bits[1:8]
+        data_bits = data_bits[::-1]
+        
+        print(data_bits)
+        res = []
+        for i in range (0, len(data_bits)):
+            if i & (i + 1) != 0:
+                res += [data_bits[i]]
+            print(res)
+        
+        res += ([0]*4)
 
-segment = Segment(seq_num=0, ack_num=1)
+        res = res[::-1]
+        print(res)
+        return bytearray([int(''.join(map(str, res[i:i+8])), 2) for i in range(0, len(res), 8)])
 
-data_bytes_4 = bytearray([0b0001])
-hamming_code_4 = segment.encode_ecc(data_bytes_4)
-print("Original data:", data_bytes_4)
-print("Hamming code:", hamming_code_4)
+
+    
+    
+
+
+
+
+# segment = Segment(seq_num=0, ack_num=1)
+# data_bytes_4 = bytearray([0b0001])
+# hamming_code_4 = segment.encode_ecc(data_bytes_4)
+# print("Hamming code:", hamming_code_4)
+# print (segment.detect_and_correct(hamming_code_4))
+
+# print (segment.detect_and_correct([0b1101000]))
+
+
+# print("Original data:", data_bytes_4)
+
+
+# decoded = segment.decode_ecc(hamming_code_4)
+# print(decoded)
+
+
 
