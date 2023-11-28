@@ -109,14 +109,6 @@ class Host(ABC):
     def init_seq_num(self):
         self._seq_num = random.randint(0, Host.MAX_SEQ_NUM)
 
-    def start_three_way_handshake(self):
-        # TODO move server TWH here
-        pass
-
-    def await_three_way_handshake(self):
-        # TODO move client TWH here
-        pass
-
     # Go Back N ARQ
     def start_receiver_transfer(self, src_address: Address) -> bytes:
         # go back-n receiver process
