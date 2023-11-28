@@ -123,7 +123,7 @@ class Host(ABC):
             # TODO: timeout handling
             # listen for payload fragments
 
-            received = self._connection.listen_segment(1000)
+            received = self._connection.listen_segment(WAITING_TIMEOUT)
             if received is not None:
                 # if EOF received
                 if received.segment.flags.fin:
