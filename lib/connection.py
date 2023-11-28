@@ -47,7 +47,6 @@ class Connection:
 
             return MessageInfo(parsed_segment, Address(address[0], address[1]))
         except TimeoutError:
-            # TODO: log format
             # TODO: raise exception
             Logger.connection_log(self.get_addr(), 'Connection Timeout')
             return None

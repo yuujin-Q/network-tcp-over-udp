@@ -6,8 +6,12 @@ class ServerHandler(Host):
         super().__init__(self_ip, self_port)
 
     def run(self):
-        # TODO: implement runner
-        pass
+        self._logger.host_log(f"Running server handler on {self.get_address()}")
+        destination: Address = self.three_way_handshake()
+
+        self.start_sender_transfer(destination, self._file_payload)
+
+        self.close_connection()
 
     def listen_for_client(self) -> Address:
         # Waiting client request for connect

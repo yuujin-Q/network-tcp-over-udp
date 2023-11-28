@@ -31,6 +31,7 @@ class Host(ABC):
         self._ack_num: int | None = None
         self._status: int = Host.Status.CLOSED
         self._logger: Logger = Logger(Address(self_ip, self_port))
+        self._file_payload: bytes = b''
 
     def get_address(self):
         return self._connection.get_addr()
@@ -42,6 +43,12 @@ class Host(ABC):
     @abstractmethod
     def three_way_handshake(self) -> Address:
         pass
+
+    def set_file_payload(self, data: bytes):
+        self._file_payload = data
+
+    def close_connection(self):
+        self._connection.close_socket()
 
     def send_segment(self,
                      message: MessageInfo,

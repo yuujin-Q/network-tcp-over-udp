@@ -16,7 +16,6 @@ class Server:
     def __init__(self, self_ip: str = LOOPBACK_ADDR, self_port: int = DEFAULT_PORT):
         self._connection: ServerHandler = ServerHandler(self_ip, self_port)
         self._clients_server_port_map: dict[Address, int] = dict()
-        self._used_ports: set[int] = set()
         self._file_payload = b''
         self._port_handler_map: dict[port, ServerHandler] = dict()
 
@@ -53,14 +52,24 @@ class Server:
         for address, port_num in self._clients_server_port_map.items():
             if port_num == -1:
                 new_handler = ServerHandler(address.get_ip())
+
+                # record new_handler information
                 self._port_handler_map[address.get_port()] = new_handler
                 self._clients_server_port_map[address] = new_handler.get_address().get_port()
 
     def run_handlers(self):
-        # create thread, call handler.run
         print('[!] Running Server Handlers')
-        print('stub')
-        # TODO: run handlers
+
+        # TODO: threading
+        # run each handler
+        completed_handler_ports: list[int] = []
+        for port_num, handler in self._port_handler_map.items():
+            handler.run()
+            completed_handler_ports.append(port_num)
+
+        # delete handlers
+        for port_num in completed_handler_ports:
+            del self._port_handler_map[port_num]
 
 
 if __name__ == "__main__":
