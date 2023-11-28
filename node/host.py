@@ -48,7 +48,6 @@ class Host(ABC):
             self._connection.send_segment(message)
             received = self._connection.listen_segment()
 
-            print(received)
             if received is not None:
                 received_segment = received.segment
                 if received_segment.ack_num == next_seq_num:
@@ -59,14 +58,18 @@ class Host(ABC):
         if received is None:
             return None
 
+        # Increment sequence number after successful segment sent
         self._seq_num = next_seq_num
-        self._ack_num = Host.next_seq_num(received.segment.seq_num)
         return received
 
     def send_ack(self, recv_seq_num: int, dest_addr: Address) -> None:
         # An ACK segment, if carrying no data, consumes no sequence number.
-        self._ack_num = Host.next_seq_num(recv_seq_num)
-        ack_segment = Segment.ack(self._seq_num, self._ack_num)
+        ack_num = Host.next_seq_num(recv_seq_num)
+        # If received sequence number is as expected, then update ACK number
+        if recv_seq_num == self._ack_num:
+            self._ack_num = ack_num
+
+        ack_segment = Segment.ack(self._seq_num, ack_num)
         self._connection.send_segment(MessageInfo(ack_segment, dest_addr))
 
     def init_seq_num(self):

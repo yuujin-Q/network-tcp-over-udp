@@ -49,6 +49,7 @@ class ServerHandler(Host):
         self._status = Host.Status.ESTABLISHED
         print("Received response from", received.address)
 
+        # print(self._seq_num, self._ack_num)
         return dest_addr
 
 
