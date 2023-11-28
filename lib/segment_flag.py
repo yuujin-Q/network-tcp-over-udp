@@ -1,5 +1,5 @@
-from dataclasses import dataclass
 import struct
+from dataclasses import dataclass
 
 from lib.constants import *
 
@@ -39,3 +39,14 @@ class SegmentFlag:
             int_flag |= FIN_FLAG
 
         return struct.pack(f"{ENDIAN_SPECIFIER}B", int_flag)
+
+    def __str__(self) -> str:
+        flags: list[str] = []
+        if self.syn:
+            flags.append('SYN')
+        if self.ack:
+            flags.append('ACK')
+        if self.fin:
+            flags.append('FIN')
+
+        return ','.join(flags)
