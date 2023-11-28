@@ -6,13 +6,14 @@ class ServerHandler(Host):
         super().__init__(self_ip, self_port)
 
     def run(self):
-        # TODO: implement
+        # TODO: implement runner
         pass
 
-    def listen_for_clients(self):
-        # Waiting client for connect
-        # TODO: implement
-        pass
+    def listen_for_client(self) -> Address:
+        # Waiting client request for connect
+        self._logger.host_log("Listening for connection request")
+
+        return self.three_way_handshake()
 
     def three_way_handshake(self) -> Address:
         # Three-way handshake, server-side, 1 client
@@ -54,4 +55,3 @@ if __name__ == '__main__':
     with open("img.png", "rb") as img:
         data = img.read()
         main.start_sender_transfer(dest, data)
-

@@ -29,6 +29,9 @@ class Host(ABC):
         self._status: int = Host.Status.CLOSED
         self._logger: Logger = Logger(Address(self_ip, self_port))
 
+    def get_address(self):
+        return self._connection.get_addr()
+
     @abstractmethod
     def run(self):
         pass
