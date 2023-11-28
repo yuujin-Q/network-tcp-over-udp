@@ -16,7 +16,7 @@ class Client(Host):
         self.init_seq_num()
 
         # Client start SYN
-        print("Connecting to", self._dest_addr)
+        self._logger.host_log(f"Initiating Three Way Handshake with {self._dest_addr}")
         syn_segment = Segment.syn(self._seq_num)
 
         # SYN segment sent, status is now SYN-SENT
@@ -34,12 +34,12 @@ class Client(Host):
 
         # SYN ACK'd, status now ESTABLISHED
         self._status = Host.Status.ESTABLISHED
-        print("Connection established to", received.address)
+        self._logger.host_log(f"Connection established to {received.address}")
 
         # Send ACK segment for server SYN-ACK, 1 time is enough
         self.send_ack(received.segment.seq_num, self._dest_addr)
 
-        # print(self._seq_num, self._ack_num)
+        self._logger.host_log("Three Way Handshake Completed")
         return received.address
 
 

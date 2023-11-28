@@ -3,6 +3,12 @@ from lib.segment import Segment
 
 
 class Logger:
+    def __init__(self, address: Address):
+        self._address = address
+
+    def host_log(self, msg: str, segment: Segment = None):
+        Logger.connection_log(self._address, msg, segment)
+
     @staticmethod
     def _log(msg: str):
         print(msg)

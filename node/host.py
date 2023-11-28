@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from lib.address import Address
 from lib.connection import Connection
 from lib.constants import *
+from lib.logger import Logger
 from lib.messageinfo import MessageInfo
 from lib.segment import Segment
 
@@ -21,14 +22,12 @@ class Host(ABC):
 
     MAX_SEQ_NUM = 4294967295
 
-    # _connection: Connection
-    # _state: int
-    # _seq_num: int
     def __init__(self, self_ip: str = LOOPBACK_ADDR, self_port: int = DEFAULT_PORT):
         self._connection: Connection = Connection(Address(self_ip, self_port))
         self._seq_num: int = 0
         self._ack_num: int | None = None
         self._status: int = Host.Status.CLOSED
+        self._logger: Logger = Logger(Address(self_ip, self_port))
 
     @abstractmethod
     def run(self):

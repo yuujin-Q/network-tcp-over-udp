@@ -32,6 +32,8 @@ class Connection:
         dest = message.address
         self.__socket.sendto(Segment.convert_to_byte(segment), dest.get_address_data())
 
+        Logger.connection_log(self.get_addr(), f'Sent segment to address {dest}', segment=segment)
+
     def listen_segment(self, timeout: float | None = 0.200) -> MessageInfo | None:
         # Listen single UDP datagram within timeout and convert into segment
 
@@ -40,14 +42,17 @@ class Connection:
             segment_bytes, address = self.__socket.recvfrom(SEGMENT_SIZE)
             parsed_segment = Segment.parse_from_bytes(segment_bytes)
 
-            Logger.connection_log(self.get_addr(), f'Received segment from address {address}', segment=parsed_segment)
+            Logger.connection_log(self.get_addr(),
+                                  f'Received segment from address {address}', segment=parsed_segment)
 
             return MessageInfo(parsed_segment, Address(address[0], address[1]))
         except TimeoutError:
             # TODO: log format
-            print('Timeout Error')
+            # TODO: raise exception
+            Logger.connection_log(self.get_addr(), 'Connection Timeout')
             return None
 
     def close_socket(self) -> None:
         # Release UDP socket
+        Logger.connection_log(self.get_addr(), 'Terminating Socket')
         self.__socket.close()
