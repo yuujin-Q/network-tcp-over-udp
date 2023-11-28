@@ -62,13 +62,14 @@ class Host(ABC):
 
     def send_segment(self,
                      message: MessageInfo,
-                     max_attempt: int = DEFAULT_ATTEMPT) -> MessageInfo | None:
+                     max_attempt: int = DEFAULT_ATTEMPT,
+                     timeout: int = DEFAULT_TIMEOUT) -> MessageInfo | None:
 
         next_seq_num = Host.next_seq_num(self._seq_num)
         received: MessageInfo | None = None
         for _ in range(max_attempt):
             self._connection.send_segment(message)
-            received = self._connection.listen_segment()
+            received = self._connection.listen_segment(timeout)
 
             if received is not None:
                 received_segment = received.segment

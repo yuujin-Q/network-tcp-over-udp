@@ -34,7 +34,7 @@ class Client(Host):
 
         # SYN segment sent, status is now SYN-SENT
         self._status = Host.Status.SYN_SENT
-        received = self.send_segment(MessageInfo(syn_segment, self._dest_addr))
+        received = self.send_segment(MessageInfo(syn_segment, self._dest_addr), WAITING_TIMEOUT)
         # TODO: handle error in connection failure
         # synchronize acknowledgement number
         self._ack_num = received.segment.seq_num
