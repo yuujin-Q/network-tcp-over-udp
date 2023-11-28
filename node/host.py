@@ -84,8 +84,27 @@ class Host(ABC):
         ack_segment = Segment.ack(self._seq_num, next_ack_num)
         self._connection.send_segment(MessageInfo(ack_segment, dest_addr))
 
+    def await_segment(self) -> MessageInfo | None:
+        while True:
+            received = self._connection.listen_segment(WAITING_TIMEOUT)
+
+            if received.segment.seq_num == self._ack_num:
+                self.send_ack(received.segment.seq_num, received.address)
+                return received
+
+            return None
+
+
     def init_seq_num(self):
         self._seq_num = random.randint(0, Host.MAX_SEQ_NUM)
+
+    def start_three_way_handshake(self):
+        # TODO move server TWH here
+        pass
+
+    def await_three_way_handshake(self):
+        # TODO move client TWH here
+        pass
 
     # Go Back N ARQ
     def start_receiver_transfer(self, src_address: Address) -> bytes:
