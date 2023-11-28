@@ -182,7 +182,36 @@ class Segment:
         return bytearray([int(''.join(map(str, res[i:i+8])), 2) for i in range(0, len(res), 8)])
 
 
-    
+    @staticmethod
+    def detect_and_correct(encoded_data: bytes) -> bytes:
+        data_bits = [int(bit) for byte in encoded_data for bit in format(byte, '08b')]
+        # print(data_bits)
+        data_bits = data_bits[1:8]
+        data_bits = data_bits[::-1]
+
+        parity = []
+        parity += [data_bits[0] ^ data_bits[2] ^ data_bits[4] ^ data_bits[6]]
+        parity += [data_bits[1] ^ data_bits[2] ^ data_bits[5] ^ data_bits[6]]
+        parity += [data_bits[3] ^ data_bits[4] ^ data_bits[5] ^ data_bits[6]]
+
+        print(parity)
+        err_pos = 0
+        for i in range(0, len(parity)):
+            if(parity[i] == 1):
+                err_pos += 2**i
+        
+        result = data_bits
+        if(err_pos > 0):
+            if(result[err_pos-1] == 1):
+                result[err_pos-1] = 0
+            else:
+                result[err_pos-1] = 1
+        
+        result = result[::-1]
+        result = [0] + result
+
+        # print(result)
+        return bytearray([int(''.join(map(str, result[i:i+8])), 2) for i in range(0, len(result), 8)])
     
 
 
@@ -194,7 +223,7 @@ class Segment:
 # print("Hamming code:", hamming_code_4)
 # print (segment.detect_and_correct(hamming_code_4))
 
-# print (segment.detect_and_correct([0b1101000]))
+# print (segment.detect_and_correct([0b0001111]))
 
 
 # print("Original data:", data_bytes_4)
