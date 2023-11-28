@@ -1,8 +1,10 @@
 import argparse
 import os.path
 import struct
+import threading
 import time
 from dataclasses import dataclass
+from threading import Thread
 
 from lib.connection import Address
 from lib.constants import LOOPBACK_ADDR, DEFAULT_PORT, ENDIAN_SPECIFIER
@@ -52,19 +54,31 @@ class Server:
                 if continue_listen.lower() == 'n':
                     break
 
-    def run_handlers(self):
+    def run_handlers(self, is_threading: bool = False):
         print('[!] Running Server Handlers')
 
-        # TODO: threading
-        # run each handler
-        completed_handler_ports: list[int] = []
-        for port_num, handler in self._port_handler_map.items():
-            handler.run()
-            completed_handler_ports.append(port_num)
+        if is_threading is False:
+            # run each handler
+            completed_handler_ports: list[int] = []
+            for port_num, handler in self._port_handler_map.items():
+                handler.run()
+                completed_handler_ports.append(port_num)
 
-        # delete handlers
-        for port_num in completed_handler_ports:
-            del self._port_handler_map[port_num]
+            # delete handlers
+            for port_num in completed_handler_ports:
+                del self._port_handler_map[port_num]
+        else:
+            # threading
+            threads: list[Thread] = []
+            for port_num, handler in self._port_handler_map.items():
+                handler_thread = Thread(target=handler.run, name=port_num)
+                threads.append(handler_thread)
+                handler_thread.start()
+
+            while threading.active_count() > 1:
+                for t in threads:
+                    t.join()
+                    del self._port_handler_map[int(t.name)]
 
 
 if __name__ == "__main__":
@@ -97,4 +111,11 @@ if __name__ == "__main__":
     server_parent = Server(ip, port)
     server_parent.set_file_payload(data)
     server_parent.listen()
-    server_parent.run_handlers()
+
+    parallel = input('[?] Enable Parallel File Transfer? [y/n]')
+    while parallel.lower() != 'y' and parallel.lower() != 'n':
+        time.sleep(1)
+        print('[!] Invalid input, please input [y/n]')
+        parallel = input('[?] Enable Parallel File Transfer? [y/n]')
+
+    server_parent.run_handlers(parallel.lower() == 'y')

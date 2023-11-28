@@ -48,9 +48,9 @@ class Host(ABC):
         self._file_payload = data
 
     def close_connection(self):
-        if self._status == Host.Status.FIN_WAIT:
+        if self._status == Host.Status.CLOSE_WAIT:
             pass
-        else:
+        elif self._status == Host.Status.FIN_WAIT:
             self._status = Host.Status.CLOSE_WAIT
             end_time = time.time() + 2 * DEFAULT_TIMEOUT
             while time.time() < end_time:
