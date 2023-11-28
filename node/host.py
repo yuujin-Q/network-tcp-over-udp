@@ -48,11 +48,14 @@ class Host(ABC):
         self._file_payload = data
 
     def close_connection(self):
-        self._status = Host.Status.CLOSE_WAIT
-        end_time = time.time() + 2 * DEFAULT_TIMEOUT
-        while time.time() < end_time:
-            self._connection.listen_segment()
-            # TODO finish data transfer before closing, if needed?
+        if self._status == Host.Status.FIN_WAIT:
+            pass
+        else:
+            self._status = Host.Status.CLOSE_WAIT
+            end_time = time.time() + 2 * DEFAULT_TIMEOUT
+            while time.time() < end_time:
+                self._connection.listen_segment()
+                # TODO finish data transfer before closing, if needed?
 
         self._connection.close_socket()
         self._status = Host.Status.CLOSED
@@ -105,7 +108,6 @@ class Host(ABC):
                 return received
 
             return None
-
 
     def init_seq_num(self):
         self._seq_num = random.randint(0, Host.MAX_SEQ_NUM)
