@@ -90,7 +90,6 @@ class Host(ABC):
                 if received.segment.flags.fin:
                     break
 
-                print(self._ack_num, received.segment.seq_num)
                 if self._ack_num == received.segment.seq_num:
                     # cache payload segment
                     payload_segments.append(received.segment)
@@ -127,7 +126,6 @@ class Host(ABC):
         # start send
         MAX_WINDOW_INDEX = len(payload_segments)
         window_start_index = 0
-        print(MAX_WINDOW_INDEX)
         while window_start_index < MAX_WINDOW_INDEX:
             # TODO: try catch
 
@@ -148,16 +146,11 @@ class Host(ABC):
                 if received_ack_msg is None:
                     continue
 
-                # print(seq_num_idx, received_ack_msg.segment.ack_num)
                 recv_ack_segment = received_ack_msg.segment
-                print(recv_ack_segment.ack_num, self._seq_num)
                 diff = Host.seq_num_diff(recv_ack_segment.ack_num, self._seq_num)
-                print(diff)
 
-            # update window start position
             window_start_index += diff
             self._seq_num = Host.inc_seq_num(self._seq_num, diff)
-            print(window_start_index)
 
         # send for transfer completed, send FIN
         self.send_fin_segment(dest_address)
