@@ -76,17 +76,13 @@ if __name__ == "__main__":
     arg_parser = argparse.ArgumentParser(description='server host for file transfer')
     arg_parser.add_argument('port', type=int, help='specifies port number')
     arg_parser.add_argument('filename', type=str, help='specifies filename')
-    arg_parser.add_argument('--ip', type=str, nargs=1, help='set server ip, defaults to localhost')
+    arg_parser.add_argument('--ip', type=str, help='set server ip, defaults to localhost', default=LOOPBACK_ADDR)
 
     arguments = arg_parser.parse_args()
 
-    ip: str
+    ip: str = arguments.ip
     port: int = arguments.port
     filename: str = arguments.filename
-    if arguments.ip is None:
-        ip = LOOPBACK_ADDR
-    else:
-        ip = arguments.ip
 
     # read file, checks current working dir
     cwd = os.getcwd()
