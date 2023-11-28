@@ -40,6 +40,8 @@ class ServerHandler(Host):
         self.init_seq_num()
         dest_addr = received.address
 
+        print("Connection request received from", dest_addr)
+
         self._ack_num = Host.next_seq_num(received.segment.seq_num)
         syn_ack_segment = Segment.syn_ack(self._seq_num, self._ack_num)
 
@@ -47,7 +49,7 @@ class ServerHandler(Host):
 
         # SYN-ACK ACK'd, three-way handshake completed
         self._status = Host.Status.ESTABLISHED
-        print("Received response from", received.address)
+        print("Connection established to", received.address)
 
         # print(self._seq_num, self._ack_num)
         return dest_addr

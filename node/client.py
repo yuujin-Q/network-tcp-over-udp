@@ -34,7 +34,7 @@ class Client(Host):
 
         # SYN ACK'd, status now ESTABLISHED
         self._status = Host.Status.ESTABLISHED
-        print("Received response from", received.address)
+        print("Connection established to", received.address)
 
         # Send ACK segment for server SYN-ACK, 1 time is enough
         self.send_ack(received.segment.seq_num, self._dest_addr)
