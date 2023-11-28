@@ -45,10 +45,11 @@ class ServerHandler(Host):
         self._logger.host_log(f"Connection established to {received.address}")
         self._logger.host_log("Three Way Handshake Completed")
 
+        print(self._seq_num, self._ack_num)
         return dest_addr
 
 
 if __name__ == '__main__':
     main = ServerHandler(self_port=SERVER_BROADCAST_PORT)
-    main.three_way_handshake()
-    # main.start_file_transfer()
+    dest = main.three_way_handshake()
+    # main.start_sender_transfer(dest, b'ini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DD')
