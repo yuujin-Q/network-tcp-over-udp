@@ -14,18 +14,10 @@ class ServerHandler(Host):
         # TODO: implement
         pass
 
-    def start_file_transfer(self):
-        # Handshake & file transfer for all client
-        # TODO: implement
-        pass
-
-    def file_transfer(self, client_addr: Address):
-        # File transfer, server-side, Send file to 1 client
-        # TODO: implement
-        pass
-
     def three_way_handshake(self) -> Address:
         # Three-way handshake, server-side, 1 client
+        self._logger.host_log("Listening for Three Way Handshake")
+
         # received = None
         while True:
             # Server start listening for SYN
@@ -40,6 +32,8 @@ class ServerHandler(Host):
         self.init_seq_num()
         dest_addr = received.address
 
+        self._logger.host_log(f"Connection request received from {dest_addr}")
+
         self._ack_num = Host.next_seq_num(received.segment.seq_num)
         syn_ack_segment = Segment.syn_ack(self._seq_num, self._ack_num)
 
@@ -47,12 +41,15 @@ class ServerHandler(Host):
 
         # SYN-ACK ACK'd, three-way handshake completed
         self._status = Host.Status.ESTABLISHED
-        print("Received response from", received.address)
 
+        self._logger.host_log(f"Connection established to {received.address}")
+        self._logger.host_log("Three Way Handshake Completed")
+
+        print(self._seq_num, self._ack_num)
         return dest_addr
 
 
 if __name__ == '__main__':
     main = ServerHandler(self_port=SERVER_BROADCAST_PORT)
-    main.three_way_handshake()
-    # main.start_file_transfer()
+    dest = main.three_way_handshake()
+    # main.start_sender_transfer(dest, b'ini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DDini contoh payload :DD')

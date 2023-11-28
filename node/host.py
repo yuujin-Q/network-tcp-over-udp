@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from lib.address import Address
 from lib.connection import Connection
 from lib.constants import *
+from lib.logger import Logger
 from lib.messageinfo import MessageInfo
 from lib.segment import Segment
 
@@ -21,14 +22,12 @@ class Host(ABC):
 
     MAX_SEQ_NUM = 4294967295
 
-    # _connection: Connection
-    # _state: int
-    # _seq_num: int
     def __init__(self, self_ip: str = LOOPBACK_ADDR, self_port: int = DEFAULT_PORT):
         self._connection: Connection = Connection(Address(self_ip, self_port))
         self._seq_num: int = 0
         self._ack_num: int | None = None
         self._status: int = Host.Status.CLOSED
+        self._logger: Logger = Logger(Address(self_ip, self_port))
 
     @abstractmethod
     def run(self):
@@ -48,7 +47,6 @@ class Host(ABC):
             self._connection.send_segment(message)
             received = self._connection.listen_segment()
 
-            print(received)
             if received is not None:
                 received_segment = received.segment
                 if received_segment.ack_num == next_seq_num:
@@ -59,14 +57,18 @@ class Host(ABC):
         if received is None:
             return None
 
+        # Increment sequence number after successful segment sent
         self._seq_num = next_seq_num
-        self._ack_num = Host.next_seq_num(received.segment.seq_num)
         return received
 
     def send_ack(self, recv_seq_num: int, dest_addr: Address) -> None:
         # An ACK segment, if carrying no data, consumes no sequence number.
-        self._ack_num = Host.next_seq_num(recv_seq_num)
-        ack_segment = Segment.ack(self._seq_num, self._ack_num)
+        ack_num = Host.next_seq_num(recv_seq_num)
+        # If received sequence number is as expected, then update ACK number
+        if recv_seq_num == self._ack_num:
+            self._ack_num = ack_num
+
+        ack_segment = Segment.ack(self._seq_num, ack_num)
         self._connection.send_segment(MessageInfo(ack_segment, dest_addr))
 
     def init_seq_num(self):
