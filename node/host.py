@@ -37,10 +37,6 @@ class Host(ABC):
         return self._connection.get_addr()
 
     @abstractmethod
-    def run(self):
-        pass
-
-    @abstractmethod
     def three_way_handshake(self) -> Address:
         pass
 
