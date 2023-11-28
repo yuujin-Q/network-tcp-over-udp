@@ -128,35 +128,31 @@ class Segment:
         data_bits = [int(bit) for byte in payload for bit in format(byte, '08b')]
         data_bits = data_bits[4:8]
         data_bits = data_bits[::-1]
-        print(data_bits)
+        # print(data_bits)
 
-        # Calculate the total number of bits (n)
         n = 7
 
-        # Initialize the encoded data with placeholder values
         hamming_code = [-1] * (n + 1)
 
-        # Fill in the data bits in their correct positions
         j = 0
         for i in range(1, n + 2):
             if i & (i - 1) != 0:  # Skip positions that are powers of 2
                 hamming_code[i] = data_bits[j]
                 j += 1
 
-        print(hamming_code)
+        # print(hamming_code)
         hamming_code[1] = hamming_code[3] ^ hamming_code[5] ^ hamming_code[7]
         hamming_code[2] = hamming_code[3] ^ hamming_code[6] ^ hamming_code[7]
         hamming_code[4] = hamming_code[5] ^ hamming_code[6] ^ hamming_code[7]
 
         hamming_code[0] = 0
 
-        # hamming_code = hamming_code[::-1]
         result = [0]
         hamming_code = hamming_code[1:8]
         hamming_code = hamming_code[::-1]
         result += hamming_code
 
-        print(result)
+        # print(result)
         hamming_bytes = bytearray([int(''.join(map(str, result[i:i + 8])), 2) for i in range(0, n, 8)])
 
         return hamming_bytes
@@ -164,21 +160,22 @@ class Segment:
     @staticmethod
     def decode_ecc(encoded: bytes)->bytes:
         data_bits = [int(bit) for byte in encoded for bit in format(byte, '08b')]
-        print(data_bits)
+        # print(data_bits)
         data_bits = data_bits[1:8]
         data_bits = data_bits[::-1]
         
-        print(data_bits)
+        # print(data_bits)
         res = []
         for i in range (0, len(data_bits)):
             if i & (i + 1) != 0:
                 res += [data_bits[i]]
-            print(res)
+            # print(res)
         
         res += ([0]*4)
 
         res = res[::-1]
-        print(res)
+        # print(res)
+        # return res
         return bytearray([int(''.join(map(str, res[i:i+8])), 2) for i in range(0, len(res), 8)])
 
 
@@ -194,7 +191,7 @@ class Segment:
         parity += [data_bits[1] ^ data_bits[2] ^ data_bits[5] ^ data_bits[6]]
         parity += [data_bits[3] ^ data_bits[4] ^ data_bits[5] ^ data_bits[6]]
 
-        print(parity)
+        # print(parity)
         err_pos = 0
         for i in range(0, len(parity)):
             if(parity[i] == 1):
@@ -210,20 +207,77 @@ class Segment:
         result = result[::-1]
         result = [0] + result
 
-        # print(result)
         return bytearray([int(''.join(map(str, result[i:i+8])), 2) for i in range(0, len(result), 8)])
+    
+    @staticmethod
+    def encode_all_payload(payload: bytes)->bytes:
+        # print(payload)
+        data_bits = [int(bit) for byte in payload for bit in format(byte, '08b')]
+        print('databits', data_bits)
+        temp = bytearray()
+        for i in range(0, len(data_bits), 4):
+            # print("loop")
+            byte = [0]*4
+            # print(data_bits[i:i+4])
+            byte += data_bits[i:i+4]
+            # print(byte)
+            byte = bytearray([int(''.join(map(str, byte[i:i+8])), 2) for i in range(0, len(byte), 8)])
+            # print(Segment.encode_ecc(byte))
+            temp += Segment.encode_ecc(byte)
+        
+        # print(temp)
+        return temp
+    
+    @staticmethod 
+    def decode_all(encoded: bytes)->bytes:
+        # print(encoded)
+        data_bits = [int(bit) for byte in encoded for bit in format(byte, '08b')]
+        print('data bits',data_bits)
+        decoded = []
+
+        for i in range(0, len(data_bits), 8):
+            temp = data_bits[i:i+8]
+            # print(temp)
+            byte_i = bytearray([int(''.join(map(str, temp[i:i+8])), 2) for i in range(0, len(temp), 8)])
+            # print(byte_i)
+            correct = Segment.detect_and_correct(byte_i)
+
+            # print('correct', correct)
+            decoded_byte = Segment.decode_ecc(correct)
+
+            decoded_byte_as_array = [int(bit) for byte in decoded_byte for bit in format(byte, '08b')]
+            decoded_byte_as_array = decoded_byte_as_array[4:8]
+
+            decoded += decoded_byte_as_array
+        
+        print('decoded',decoded)
+        return bytearray([int(''.join(map(str, decoded[i:i+8])), 2) for i in range(0, len(decoded), 8)])
+
     
 
 
 
+# print((b'\x65\x69'))
+# temp = Segment.encode_all_payload(b'\x65\x69')
+# print(temp)
+# print([int(bit) for byte in temp for bit in format(byte, '08b')])
+# decoded = Segment.decode_all(temp)
+# print(decoded)
 
+# temp = [0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0]
+
+# print(Segment.decode_all(bytearray([int(''.join(map(str, temp[i:i+8])), 2) for i in range(0, len(temp), 8)])))
+
+# data_bits = [int(bit) for byte in temp for bit in format(byte, '08b')]
+# print(data_bits)
+# print(temp)
 # segment = Segment(seq_num=0, ack_num=1)
 # data_bytes_4 = bytearray([0b0001])
-# hamming_code_4 = segment.encode_ecc(data_bytes_4)
+# hamming_code_4 = Segment.encode_ecc(data_bytes_4)
 # print("Hamming code:", hamming_code_4)
-# print (segment.detect_and_correct(hamming_code_4))
+# print (Segment.detect_and_correct(hamming_code_4))
 
-# print (segment.detect_and_correct([0b0001111]))
+# print (Segment.detect_and_correct([0b1000101]))
 
 
 # print("Original data:", data_bytes_4)
