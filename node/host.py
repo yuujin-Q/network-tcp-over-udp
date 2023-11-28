@@ -63,12 +63,12 @@ class Host(ABC):
 
     def send_ack(self, recv_seq_num: int, dest_addr: Address) -> None:
         # An ACK segment, if carrying no data, consumes no sequence number.
-        ack_num = Host.next_seq_num(recv_seq_num)
+        next_ack_num = Host.next_seq_num(recv_seq_num)
         # If received sequence number is as expected, then update ACK number
         if recv_seq_num == self._ack_num:
-            self._ack_num = ack_num
+            self._ack_num = next_ack_num
 
-        ack_segment = Segment.ack(self._seq_num, ack_num)
+        ack_segment = Segment.ack(self._seq_num, next_ack_num)
         self._connection.send_segment(MessageInfo(ack_segment, dest_addr))
 
     def init_seq_num(self):
@@ -90,6 +90,7 @@ class Host(ABC):
                 if received.segment.flags.fin:
                     break
 
+                print(self._ack_num, received.segment.seq_num)
                 if self._ack_num == received.segment.seq_num:
                     # cache payload segment
                     payload_segments.append(received.segment)
@@ -122,18 +123,17 @@ class Host(ABC):
             payload_segments.append(chunk_segment)
 
             seq_num_idx = Host.next_seq_num(seq_num_idx)
-        # TODO: FIN FLAG
-        # payload_segments[-1].set_flags(FIN_FLAG)
 
         # start send
+        MAX_WINDOW_INDEX = len(payload_segments)
         window_start_index = 0
-        max_window_count = len(payload_segments)
-        while window_start_index < len(payload_segments):
+        print(MAX_WINDOW_INDEX)
+        while window_start_index < MAX_WINDOW_INDEX:
             # TODO: try catch
 
             # send segments in window
             # calculate windows size for send
-            send_window_size = min(window_size, max_window_count - window_start_index)
+            send_window_size = min(window_size, MAX_WINDOW_INDEX - window_start_index)
             for i in range(send_window_size):
                 # send a segment
                 self._connection.send_segment(MessageInfo(payload_segments[window_start_index + i], dest_address))
@@ -141,19 +141,23 @@ class Host(ABC):
             # assume client ACK sequentially
             # listen for ack
             end_time = time.time() + 2 * DEFAULT_TIMEOUT
-            diff = window_start_index
-            while time.time() < end_time and diff < window_start_index + send_window_size:
+            diff = 0
+            while time.time() < end_time and diff < send_window_size:
                 received_ack_msg = self._connection.listen_segment()
 
                 if received_ack_msg is None:
                     continue
 
-                # check if ACK is within window bounds
+                # print(seq_num_idx, received_ack_msg.segment.ack_num)
                 recv_ack_segment = received_ack_msg.segment
-                diff = Host.seq_num_diff(recv_ack_segment.ack_num, seq_num_idx)
+                print(recv_ack_segment.ack_num, self._seq_num)
+                diff = Host.seq_num_diff(recv_ack_segment.ack_num, self._seq_num)
+                print(diff)
 
             # update window start position
-            window_start_index = diff
+            window_start_index += diff
+            self._seq_num = Host.inc_seq_num(self._seq_num, diff)
+            print(window_start_index)
 
         # send for transfer completed, send FIN
         self.send_fin_segment(dest_address)
@@ -168,6 +172,14 @@ class Host(ABC):
             return 0
         else:
             return num + 1
+
+    @staticmethod
+    def inc_seq_num(num: int, increment: int = 1):
+        to_max = Host.MAX_SEQ_NUM - num
+        if to_max < increment:
+            return increment - to_max
+        else:
+            return num + increment
 
     @staticmethod
     def seq_num_diff(upper_num: int, lower_num: int) -> int:
