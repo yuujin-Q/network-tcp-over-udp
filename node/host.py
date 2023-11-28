@@ -81,6 +81,11 @@ class Host(ABC):
         self._seq_num = next_seq_num
         return received
 
+    def send_payload(self, payload: bytes, dest_addr: Address):
+        segment = Segment(self._seq_num, self._ack_num)
+        segment.set_payload(payload)
+        self.send_segment(MessageInfo(segment, dest_addr))
+
     def send_ack(self, recv_seq_num: int, dest_addr: Address) -> None:
         # An ACK segment, if carrying no data, consumes no sequence number.
         next_ack_num = Host.next_seq_num(recv_seq_num)
