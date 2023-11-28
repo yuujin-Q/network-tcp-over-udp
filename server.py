@@ -6,8 +6,6 @@ from dataclasses import dataclass
 
 from lib.connection import Address
 from lib.constants import LOOPBACK_ADDR, DEFAULT_PORT, ENDIAN_SPECIFIER
-from lib.messageinfo import MessageInfo
-from lib.segment import Segment
 from node.serverhandler import ServerHandler
 
 
@@ -32,6 +30,19 @@ class Server:
             if self._clients_server_port_map.get(client_address) is None:
                 self._clients_server_port_map[client_address] = -1
 
+                # init handler
+                new_handler = ServerHandler(self._ip)
+                new_handler.set_file_payload(self._file_payload)
+
+                # record new_handler information
+                self._port_handler_map[client_address.get_port()] = new_handler
+                self._clients_server_port_map[client_address] = new_handler.get_address().get_port()
+
+                # inform client to redirect
+                port_num = self._clients_server_port_map[client_address]
+                print(f'[!] Created handler at port {port_num}')
+                self._connection.send_payload(struct.pack(f'{ENDIAN_SPECIFIER}I', port_num), client_address)
+
                 continue_listen = input("[?] Listen more clients? [y/n] ")
                 while continue_listen.lower() != 'y' and continue_listen.lower() != 'n':
                     time.sleep(1)
@@ -40,23 +51,6 @@ class Server:
 
                 if continue_listen.lower() == 'n':
                     break
-
-    def notify_redirect(self):
-        # inform client to redirect
-        for client_address, port_num in self._clients_server_port_map.items():
-            print(port_num)
-            self._connection.send_payload(struct.pack(f'{ENDIAN_SPECIFIER}I', port_num), client_address)
-
-    def init_handlers(self):
-        # instantiate server handler threads
-        for client_addr, port_num in self._clients_server_port_map.items():
-            if port_num == -1:
-                new_handler = ServerHandler(self._ip)
-                new_handler.set_file_payload(self._file_payload)
-
-                # record new_handler information
-                self._port_handler_map[client_addr.get_port()] = new_handler
-                self._clients_server_port_map[client_addr] = new_handler.get_address().get_port()
 
     def run_handlers(self):
         print('[!] Running Server Handlers')
@@ -103,6 +97,4 @@ if __name__ == "__main__":
     server_parent = Server(ip, port)
     server_parent.set_file_payload(data)
     server_parent.listen()
-    server_parent.init_handlers()
-    server_parent.notify_redirect()
     server_parent.run_handlers()
