@@ -14,7 +14,7 @@ class Connection:
     __addr: Address
     __socket: socket
 
-    def __init__(self, addr: Address):
+    def __init__(self, addr: Address, enable_ecc: bool = ENABLE_ECC):
         # Init UDP socket
 
         # create socket
@@ -22,6 +22,7 @@ class Connection:
         self.__socket.bind(addr.get_address_data())
         new_addr = self.__socket.getsockname()
         self.__addr = Address(new_addr[0], new_addr[1])
+        self.__ecc_enabled = enable_ecc
 
     def get_addr(self) -> Address:
         return self.__addr
@@ -29,6 +30,11 @@ class Connection:
     def send_segment(self, message: MessageInfo) -> None:
         # Send single segment into destination
         segment = message.segment
+
+        if self.__ecc_enabled:
+            # assume that encoded fits in segment size
+            segment.payload = Segment.encode_all_payload(segment.payload)
+
         dest = message.address
         self.__socket.sendto(Segment.convert_to_byte(segment), dest.get_address_data())
 
@@ -40,7 +46,13 @@ class Connection:
         try:
             self.__socket.settimeout(timeout)
             segment_bytes, address = self.__socket.recvfrom(SEGMENT_SIZE)
+
             parsed_segment = Segment.parse_from_bytes(segment_bytes)
+
+            if self.__ecc_enabled:
+                # assume
+                decoded_payload = Segment.decode_all(parsed_segment.payload)
+                parsed_segment.payload = decoded_payload
 
             Logger.connection_log(self.get_addr(),
                                   f'Received segment from address {address}', segment=parsed_segment)
