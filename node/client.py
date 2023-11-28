@@ -44,6 +44,9 @@ class Client(Host):
 
 
 if __name__ == '__main__':
-    main = Client('127.0.0.1', SERVER_BROADCAST_PORT)
-    main.three_way_handshake()
-    # main.listen_file_transfer()
+    # main = Client('10.5.105.182', SERVER_BROADCAST_PORT, self_ip='10.5.105.147')
+    main = Client(LOOPBACK_ADDR, SERVER_BROADCAST_PORT)
+    dest = main.three_way_handshake()
+    data = main.start_receiver_transfer(dest)
+    with open("img_dest.png", "wb") as img:
+        img.write(data)
