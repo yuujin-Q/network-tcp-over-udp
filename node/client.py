@@ -7,8 +7,21 @@ class Client(Host):
         self._dest_addr: Address = Address(dest_ip, dest_port)
 
     def run(self):
-        # TODO: find server via broadcast
-        pass
+        # three way handshake to broadcast address
+        destination: Address = self.three_way_handshake()
+
+        # listen for redirect address
+        # TODO: redirect address (wait_segment)
+        # wait_segment
+
+        # three way handshake to server handler
+        # TODO: handler
+
+        # start file transfer (receiver)
+        # TODO
+
+        # save file
+        # TODO
 
     def three_way_handshake(self) -> Address:
         # Three-way handshake, client-side
