@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+
 from lib.constants import *
 
 
@@ -11,6 +12,9 @@ class Address:
         # Init Address fields
         self.__ip = ip
         self.__port = port
+
+    def __str__(self):
+        return str(f"{self.__ip}:{self.__port}")
 
     def get_address_data(self):
         return self.__ip, self.__port

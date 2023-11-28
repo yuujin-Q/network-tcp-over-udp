@@ -1,4 +1,3 @@
-from lib.constants import SERVER_BROADCAST_PORT
 from node.host import *
 
 
@@ -11,7 +10,7 @@ class Client(Host):
         # TODO: find server via broadcast
         pass
 
-    def three_way_handshake(self):
+    def three_way_handshake(self) -> Address:
         # Three-way handshake, client-side
         self._status = Host.Status.CLOSED
         self.init_seq_num()
@@ -20,10 +19,10 @@ class Client(Host):
         # Client start SYN
         print("Connecting to", self._dest_addr)
         syn_segment = Segment.syn(self._seq_num)
-        received = self.send_segment(MessageInfo(syn_segment, self._dest_addr), max_attempt=4)
 
         # SYN segment sent, status is now SYN-SENT
         self._status = Host.Status.SYN_SENT
+        received = self.send_segment(MessageInfo(syn_segment, self._dest_addr), max_attempt=4)
 
         # Check server response if SYN-ACK
         if received is not None:
@@ -37,8 +36,9 @@ class Client(Host):
         print("Received response from", received.address)
 
         # Send ACK segment for server SYN-ACK, 1 time is enough
-        self._seq_num = next_seq_num
-        self.send_ack(received_seg.seq_num, self._dest_addr)
+        self.send_ack(self._ack_num, self._dest_addr)
+
+        return received.address
 
     def listen_file_transfer(self) -> Segment:
         # File transfer, client-side
@@ -48,4 +48,4 @@ class Client(Host):
 if __name__ == '__main__':
     main = Client('127.0.0.1', SERVER_BROADCAST_PORT)
     main.three_way_handshake()
-    main.listen_file_transfer()
+    # main.listen_file_transfer()

@@ -1,5 +1,4 @@
 from node.host import *
-from lib.constants import SERVER_BROADCAST_PORT
 
 
 class ServerHandler(Host):
@@ -31,7 +30,7 @@ class ServerHandler(Host):
         while True:
             # Server start listening for SYN
             self._status = Host.Status.LISTEN
-            received: MessageInfo = self._connection.listen_segment(3000)
+            received: MessageInfo = self._connection.listen_segment(None)
             if received is not None:
                 if received.segment.flags.syn:
                     break
@@ -41,12 +40,10 @@ class ServerHandler(Host):
         self.init_seq_num()
         dest_addr = received.address
 
-        ack_num = Host.next_seq_num(received.segment.seq_num)
-        syn_ack_segment = Segment.syn_ack(self._seq_num, ack_num)
-        received = self.send_segment(MessageInfo(syn_ack_segment, dest_addr))
+        self._ack_num = Host.next_seq_num(received.segment.seq_num)
+        syn_ack_segment = Segment.syn_ack(self._seq_num, self._ack_num)
 
-        if received is None:
-            pass  # TODO handle error
+        received = self.send_segment(MessageInfo(syn_ack_segment, dest_addr))
 
         # SYN-ACK ACK'd, three-way handshake completed
         self._status = Host.Status.ESTABLISHED
@@ -58,4 +55,4 @@ class ServerHandler(Host):
 if __name__ == '__main__':
     main = ServerHandler(self_port=SERVER_BROADCAST_PORT)
     main.three_way_handshake()
-    main.start_file_transfer()
+    # main.start_file_transfer()
