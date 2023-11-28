@@ -7,28 +7,31 @@ from node.client import Client
 
 
 class ClientInstance:
-    def __init__(self, dest_ip: str, dest_port: int, self_ip: str = LOOPBACK_ADDR, self_port: int = DEFAULT_PORT):
-        self._dest_ip = dest_ip
+    def __init__(self, dest__ip: str, dest__port: int, self_ip: str = LOOPBACK_ADDR, self_port: int = DEFAULT_PORT):
+        self._dest = Address(dest__ip, dest__port)
         self._addr = Address(self_ip, self_port)
-        self._connection: Client = Client(dest_ip, dest_port, self_ip, self_port)
+        self._connection: Client = Client(dest__ip, dest__port, self_ip, self_port)
         self._server_handler: Address | None = None
 
     def request_connection(self):
+        print('[!] Requesting connection to server')
         # handshake to broadcast port
         self._connection.three_way_handshake()
 
         # redirect response
         response = self._connection.await_segment()
-        # TODO fin for close connection
+        self._connection.send_fin_segment(self._dest)
         self._connection.close_connection()
 
         # get new port
         new_port = struct.unpack(f'{ENDIAN_SPECIFIER}I', response.segment.payload)[0]
+        print(f'[!] Redirected to server port {new_port}')
 
         # create new connection
-        self._connection = Client(self._dest_ip, new_port, self._addr.get_ip(), self._addr.get_port())
+        self._connection = Client(self._dest.get_ip(), new_port, self._addr.get_ip(), self._addr.get_port())
 
     def run_receiver(self):
+        print('[!] Running File Receiving')
         # handshake to handler
         dest = self._connection.three_way_handshake()
 
