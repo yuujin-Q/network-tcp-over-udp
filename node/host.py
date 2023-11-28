@@ -50,8 +50,10 @@ class Host(ABC):
             self._status = Host.Status.CLOSE_WAIT
             end_time = time.time() + 2 * DEFAULT_TIMEOUT
             while time.time() < end_time:
-                self._connection.listen_segment()
-                # TODO finish data transfer before closing, if needed?
+                try:
+                    self._connection.listen_segment()
+                except TimeoutError:
+                    self._logger.host_log("Close Connection - Timeout on Listening")
 
         self._connection.close_socket()
         self._status = Host.Status.CLOSED
@@ -65,12 +67,15 @@ class Host(ABC):
         received: MessageInfo | None = None
         for _ in range(max_attempt):
             self._connection.send_segment(message)
-            received = self._connection.listen_segment(timeout)
+            try:
+                received = self._connection.listen_segment(timeout)
 
-            if received is not None:
-                received_segment = received.segment
-                if received_segment.ack_num == next_seq_num:
-                    break
+                if received is not None:
+                    received_segment = received.segment
+                    if received_segment.ack_num == next_seq_num:
+                        break
+            except TimeoutError:
+                self._logger.host_log('Timeout on Listening')
 
             # print(f"{i} Segment ACK not received, reattempting...")
 
@@ -98,13 +103,16 @@ class Host(ABC):
 
     def await_segment(self) -> MessageInfo | None:
         while True:
-            received = self._connection.listen_segment(WAITING_TIMEOUT)
+            try:
+                received = self._connection.listen_segment(WAITING_TIMEOUT)
 
-            if received.segment.seq_num == self._ack_num:
-                self.send_ack(received.segment.seq_num, received.address)
-                return received
+                if received.segment.seq_num == self._ack_num:
+                    self.send_ack(received.segment.seq_num, received.address)
+                    return received
 
-            return None
+                return None
+            except TimeoutError:
+                self._logger.host_log('Timeout on awaiting listen')
 
     def init_seq_num(self):
         self._seq_num = random.randint(0, Host.MAX_SEQ_NUM)
@@ -116,21 +124,22 @@ class Host(ABC):
         # payload segment buffer
         payload_segments: list[Segment] = []
         while True:
-            # TODO: timeout handling
             # listen for payload fragments
+            try:
+                received = self._connection.listen_segment(WAITING_TIMEOUT)
+                if received is not None:
+                    # if EOF received
+                    if received.segment.flags.fin:
+                        break
 
-            received = self._connection.listen_segment(WAITING_TIMEOUT)
-            if received is not None:
-                # if EOF received
-                if received.segment.flags.fin:
-                    break
+                    if self._ack_num == received.segment.seq_num:
+                        # cache payload segment
+                        payload_segments.append(received.segment)
 
-                if self._ack_num == received.segment.seq_num:
-                    # cache payload segment
-                    payload_segments.append(received.segment)
-
-                    # reply sender with ACK
-                    self.send_ack(received.segment.seq_num, src_address)
+                        # reply sender with ACK
+                        self.send_ack(received.segment.seq_num, src_address)
+            except TimeoutError:
+                self._logger.host_log('Receiver Transfer - Timeout on Fetching Chunk')
 
         # reassemble payload
         payload = b''
@@ -162,8 +171,6 @@ class Host(ABC):
         MAX_WINDOW_INDEX = len(payload_segments)
         window_start_index = 0
         while window_start_index < MAX_WINDOW_INDEX:
-            # TODO: try catch
-
             # send segments in window
             # calculate windows size for send
             send_window_size = min(window_size, MAX_WINDOW_INDEX - window_start_index)
@@ -176,13 +183,16 @@ class Host(ABC):
             end_time = time.time() + 2 * DEFAULT_TIMEOUT
             diff = 0
             while time.time() < end_time and diff < send_window_size:
-                received_ack_msg = self._connection.listen_segment()
+                try:
+                    received_ack_msg = self._connection.listen_segment()
 
-                if received_ack_msg is None:
-                    continue
+                    if received_ack_msg is None:
+                        continue
 
-                recv_ack_segment = received_ack_msg.segment
-                diff = Host.seq_num_diff(recv_ack_segment.ack_num, self._seq_num)
+                    recv_ack_segment = received_ack_msg.segment
+                    diff = Host.seq_num_diff(recv_ack_segment.ack_num, self._seq_num)
+                except TimeoutError:
+                    self._logger.host_log('Sender Transfer - Timeout on Listening Response')
 
             window_start_index += diff
             self._seq_num = Host.inc_seq_num(self._seq_num, diff)

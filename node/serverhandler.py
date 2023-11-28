@@ -27,10 +27,13 @@ class ServerHandler(Host):
         while True:
             # Server start listening for SYN
             self._status = Host.Status.LISTEN
-            received: MessageInfo = self._connection.listen_segment(None)
-            if received is not None:
-                if received.segment.flags.syn:
-                    break
+            try:
+                received: MessageInfo = self._connection.listen_segment(None)
+                if received is not None:
+                    if received.segment.flags.syn:
+                        break
+            except TimeoutError:
+                self._logger.host_log('TWH - Timeout on Listening')
 
         # Received correct SYN request, status is now SYN-RECV
         self._status = Host.Status.SYN_RECV

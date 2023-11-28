@@ -40,7 +40,7 @@ class Connection:
 
         Logger.connection_log(self.get_addr(), f'Sent segment to address {dest}', segment=segment)
 
-    def listen_segment(self, timeout: float | None = 0.200) -> MessageInfo | None:
+    def listen_segment(self, timeout: float | None = 0.200) -> MessageInfo:
         # Listen single UDP datagram within timeout and convert into segment
 
         try:
@@ -59,9 +59,9 @@ class Connection:
 
             return MessageInfo(parsed_segment, Address(address[0], address[1]))
         except TimeoutError:
-            # TODO: raise exception
             Logger.connection_log(self.get_addr(), 'Connection Timeout')
-            return None
+
+            raise TimeoutError
 
     def close_socket(self) -> None:
         # Release UDP socket
