@@ -18,7 +18,10 @@ class Host(ABC):
          LISTEN,
          SYN_SENT,
          SYN_RECV,
-         ESTABLISHED) = range(5)
+         ESTABLISHED,
+         FIN_WAIT,
+         CLOSE_WAIT,
+         TIME_WAIT) = range(8)
 
     MAX_SEQ_NUM = 4294967295
 
@@ -159,6 +162,7 @@ class Host(ABC):
         self.send_fin_segment(dest_address)
 
     def send_fin_segment(self, dest_address: Address):
+        self._status = Host.Status.FIN_WAIT
         fin_segment = Segment.fin(self._seq_num)
         self._connection.send_segment(MessageInfo(fin_segment, dest_address))
 
